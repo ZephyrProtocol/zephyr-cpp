@@ -222,12 +222,20 @@ namespace monero {
     void scan_txs(const std::vector<std::string>& tx_hashes) override;
     void rescan_spent() override;
     void rescan_blockchain() override;
-    uint64_t get_balance() const override;
-    uint64_t get_balance(uint32_t account_idx) const override;
-    uint64_t get_balance(uint32_t account_idx, uint32_t subaddress_idx) const override;
-    uint64_t get_unlocked_balance() const override;
-    uint64_t get_unlocked_balance(uint32_t account_idx) const override;
-    uint64_t get_unlocked_balance(uint32_t account_idx, uint32_t subaddress_idx) const override;
+    std::vector<std::pair<std::string, std::string>> get_circulating_supply() const override;
+    void get_reserve_info(uint64_t& zeph_reserve, uint64_t& num_stables, uint64_t& num_reserves, uint64_t& assets, uint64_t& assets_ma, uint64_t& liabilities, uint64_t& equity, uint64_t& equity_ma, double& reserve_ratio, double& reserve_ratio_ma) const override;
+
+
+    std::map<std::string, uint64_t> get_balance() const override;
+    std::map<uint32_t, std::map<std::string, uint64_t>> get_balance(uint32_t account_idx) const override;
+    uint64_t get_balance(const std::string& asset_type, uint32_t account_idx) const override;
+    uint64_t get_balance(const std::string& asset_type, uint32_t account_idx, uint32_t subaddress_idx) const override;
+
+    std::map<std::string, uint64_t> get_unlocked_balance() const override;
+    std::map<uint32_t, std::map<std::string, uint64_t>> get_unlocked_balance(uint32_t account_idx) const override;
+    uint64_t get_unlocked_balance(const std::string& asset_type, uint32_t account_idx) const override;
+    uint64_t get_unlocked_balance(const std::string& asset_type, uint32_t account_idx, uint32_t subaddress_idx) const override;
+
     std::vector<monero_account> get_accounts(bool include_subaddresses, const std::string& tag) const override;
     monero_account get_account(const uint32_t account_idx, bool include_subaddresses) const override;
     monero_account create_account(const std::string& label = "") override;

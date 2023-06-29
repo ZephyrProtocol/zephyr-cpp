@@ -1,22 +1,24 @@
-# Monero C++ Library
+# Zephyr C++ Library
 
-A C++ library for creating Monero applications using native bindings to [monero v0.18.2.2 'Flourine Fermie'](https://github.com/monero-project/monero/tree/v0.18.2.2).
+A C++ library for creating Zephyr applications using native bindings to [zephyr v1.0.0 'TBC'](https://github.com/ZephyrProtocol/zephyr).
 
-* Supports fully client-side wallets by wrapping [wallet2.h](https://github.com/monero-project/monero/blob/master/src/wallet/wallet2.h).
-* Supports multisig, view-only, and offline wallets.
-* Uses a clearly defined [data model and API specification](https://moneroecosystem.org/monero-java/monero-spec.pdf) intended to be intuitive and robust.
-* Query wallet transactions, transfers, and outputs by their properties.
-* Receive notifications when wallets sync, send, or receive.
-* Tested by over 100 tests in [monero-java](https://github.com/monero-ecosystem/monero-java) and [monero-javascript](https://github.com/monero-ecosystem/monero-javascript) using JNI and WebAssembly bindings.
+Adapted for Zephyr from [monero-cpp](https://github.com/monero-ecosystem/monero-cpp).
+
+- Supports fully client-side wallets by wrapping [wallet2.h](https://github.com/ZephyrProtocol/zephyr/blob/master/src/wallet/wallet2.h).
+- Supports multisig, view-only, and offline wallets.
+- Uses a clearly defined [data model and API specification](https://moneroecosystem.org/monero-java/monero-spec.pdf) intended to be intuitive and robust.
+- Query wallet transactions, transfers, and outputs by their properties.
+- Receive notifications when wallets sync, send, or receive.
+- Tested by over 100 tests in [monero-java](https://github.com/monero-ecosystem/monero-java) and [monero-javascript](https://github.com/monero-ecosystem/monero-javascript) using JNI and WebAssembly bindings.
 
 ## Table of contents
 
-* [Sample code](#sample-code)
-* [Documentation](#documentation)
-* [Using this library in your project](#using-this-library-in-your-project)
-* [Related projects](#related-projects)
-* [License](#license)
-* [Donations](#donations)
+- [Sample code](#sample-code)
+- [Documentation](#documentation)
+- [Using this library in your project](#using-this-library-in-your-project)
+- [Related projects](#related-projects)
+- [License](#license)
+- [Donations](#donations)
 
 ## Sample code
 
@@ -154,9 +156,9 @@ wallet_random->close(true);
 
 ## Documentation
 
-* [API documentation](https://moneroecosystem.org/monero-cpp/annotated.html)
-* [API and model overview with visual diagrams](https://moneroecosystem.org/monero-java/monero-spec.pdf)
-* [monero-javascript documentation](https://github.com/monero-ecosystem/monero-javascript#documentation) provides additional documentation which translates to monero-cpp
+- [API documentation](https://moneroecosystem.org/monero-cpp/annotated.html)
+- [API and model overview with visual diagrams](https://moneroecosystem.org/monero-java/monero-spec.pdf)
+- [monero-javascript documentation](https://github.com/monero-ecosystem/monero-javascript#documentation) provides additional documentation which translates to monero-cpp
 
 ## Using this library in your project
 
@@ -167,41 +169,44 @@ For example, [monero-java](https://github.com/monero-ecosystem/monero-java) comp
 ### Building monero-cpp on Mac & Linux
 
 1. If building this library standalone instead of as a submodule in another project, clone the project repository and update its submodules:
-    1. `git clone --recurse-submodules https://github.com/monero-ecosystem/monero-cpp.git`
-    2. `cd ./monero-cpp && ./bin/update_submodules.sh`
+   1. `git clone --recurse-submodules https://github.com/monero-ecosystem/monero-cpp.git`
+   2. `cd ./monero-cpp && ./bin/update_submodules.sh`
 2. Install [monero-project dependencies](https://github.com/monero-project/monero#dependencies) for your system. For example, on Ubuntu:<br>
-    1. `sudo apt update && sudo apt install build-essential cmake pkg-config libssl-dev libzmq3-dev libsodium-dev libunwind8-dev liblzma-dev libreadline6-dev libpgm-dev qttools5-dev-tools libhidapi-dev libusb-1.0-0-dev libprotobuf-dev protobuf-compiler libudev-dev libboost-chrono-dev libboost-date-time-dev libboost-filesystem-dev libboost-locale-dev libboost-program-options-dev libboost-regex-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev python3 ccache`
-    2. Install expat (dependency of unbound):
 
-         ```
-         cd ~
-         wget https://github.com/libexpat/libexpat/releases/download/R_2_4_8/expat-2.4.8.tar.bz2
-         tar -xf expat-2.4.8.tar.bz2
-         sudo rm expat-2.4.8.tar.bz2
-         cd expat-2.4.8
-         ./configure --enable-static --disable-shared
-         make
-         sudo make install
-         cd ../
-         ```
-     3. Install unbound:
+   1. `sudo apt update && sudo apt install build-essential cmake pkg-config libssl-dev libzmq3-dev libsodium-dev libunwind8-dev liblzma-dev libreadline6-dev libpgm-dev qttools5-dev-tools libhidapi-dev libusb-1.0-0-dev libprotobuf-dev protobuf-compiler libudev-dev libboost-chrono-dev libboost-date-time-dev libboost-filesystem-dev libboost-locale-dev libboost-program-options-dev libboost-regex-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev python3 ccache`
+   2. Install expat (dependency of unbound):
 
-         ```
-         cd ~
-         wget https://www.nlnetlabs.nl/downloads/unbound/unbound-1.17.0.tar.gz
-         tar xzf unbound-1.17.0.tar.gz
-         sudo apt update
-         sudo apt install -y build-essential
-         sudo apt install -y libssl-dev
-         sudo apt install -y libexpat1-dev
-         sudo apt-get install -y bison
-         sudo apt-get install -y flex
-         cd unbound-1.17.0
-         ./configure --with-libexpat=/usr --with-ssl=/usr
-         make
-         sudo make install
-         cd ../
-         ```
+      ```
+      cd ~
+      wget https://github.com/libexpat/libexpat/releases/download/R_2_4_8/expat-2.4.8.tar.bz2
+      tar -xf expat-2.4.8.tar.bz2
+      sudo rm expat-2.4.8.tar.bz2
+      cd expat-2.4.8
+      ./configure --enable-static --disable-shared
+      make
+      sudo make install
+      cd ../
+      ```
+
+   3. Install unbound:
+
+      ```
+      cd ~
+      wget https://www.nlnetlabs.nl/downloads/unbound/unbound-1.17.0.tar.gz
+      tar xzf unbound-1.17.0.tar.gz
+      sudo apt update
+      sudo apt install -y build-essential
+      sudo apt install -y libssl-dev
+      sudo apt install -y libexpat1-dev
+      sudo apt-get install -y bison
+      sudo apt-get install -y flex
+      cd unbound-1.17.0
+      ./configure --with-libexpat=/usr --with-ssl=/usr
+      make
+      sudo make install
+      cd ../
+      ```
+
 3. `export MONERO_CPP=path/to/monero-cpp`
 4. `cd $MONERO_CPP/external/monero-project`
 5. Build monero-project to create .a libraries, e.g.: `make release-static -j8`
@@ -214,31 +219,33 @@ For example, [monero-java](https://github.com/monero-ecosystem/monero-java) comp
 3. Update packages: `pacman -Syu` and confirm at prompts.
 4. Relaunch MSYS2 (if necessary) and install dependencies:
 
-    For 64 bit:
+   For 64 bit:
 
-     ```
-     pacman -S mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-zeromq mingw-w64-x86_64-libsodium mingw-w64-x86_64-hidapi mingw-w64-x86_64-unbound mingw-w64-x86_64-protobuf git mingw-w64-x86_64-libusb gettext base-devel
-     ```
+   ```
+   pacman -S mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-zeromq mingw-w64-x86_64-libsodium mingw-w64-x86_64-hidapi mingw-w64-x86_64-unbound mingw-w64-x86_64-protobuf git mingw-w64-x86_64-libusb gettext base-devel
+   ```
 
-     For 32 bit:
+   For 32 bit:
 
-     ```
-     pacman -S  mingw-w64-i686-toolchain make mingw-w64-i686-cmake mingw-w64-i686-boost mingw-w64-i686-openssl mingw-w64-i686-zeromq mingw-w64-i686-libsodium mingw-w64-i686-hidapi mingw-w64-i686-unbound mingw-w64-i686-protobuf git mingw-w64-i686-libusb gettext base-devel
-     ```
+   ```
+   pacman -S  mingw-w64-i686-toolchain make mingw-w64-i686-cmake mingw-w64-i686-boost mingw-w64-i686-openssl mingw-w64-i686-zeromq mingw-w64-i686-libsodium mingw-w64-i686-hidapi mingw-w64-i686-unbound mingw-w64-i686-protobuf git mingw-w64-i686-libusb gettext base-devel
+   ```
+
 5. Clone repo if installing standalone (skip if building as part of another repo like monero-java or monero-javascript): `git clone --recursive https://github.com/monero-ecosystem/monero-cpp.git`
 6. Update submodules: `cd <path/to/monero-cpp> && ./bin/update_submodules.sh`
 7. `cd ./external/monero-project`
-9. Build monero-project:
+8. Build monero-project:
 
-    For 64 bit: `make release-static-win64`
-    
-    For 32 bit: `make release-static-win32`
-10. Build as a shared library to ./build/: `cd ../../ && ./bin/build_libmonero_cpp.sh`
+   For 64 bit: `make release-static-win64`
+
+   For 32 bit: `make release-static-win32`
+
+9. Build as a shared library to ./build/: `cd ../../ && ./bin/build_libmonero_cpp.sh`
 
 ## Related projects
 
-* [monero-java](https://github.com/monero-ecosystem/monero-java)
-* [monero-javascript](https://github.com/monero-ecosystem/monero-javascript)
+- [monero-java](https://github.com/monero-ecosystem/monero-java)
+- [monero-javascript](https://github.com/monero-ecosystem/monero-javascript)
 
 ## License
 

@@ -69,7 +69,7 @@ namespace monero_utils
 
   // ------------------------------ CONSTANTS ---------------------------------
 
-  static const int RING_SIZE = 12;  // network-enforced ring size
+  static const int RING_SIZE = 16;  // network-enforced ring size
 
   // -------------------------------- UTILS -----------------------------------
 
@@ -93,12 +93,16 @@ namespace monero_utils
    *
    * TODO: add_json_member("key", "val", ...) treated as integer instead of string literal
    */
-  template <class T>
-  void add_json_member(std::string key, T val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root, rapidjson::Value& field) {
-    rapidjson::Value field_key(key.c_str(), key.size(), allocator);
-    field.SetInt64((uint64_t) val);
-    root.AddMember(field_key, field, allocator);
-  }
+  // template <class T>
+  // void add_json_member(std::string key, T val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root, rapidjson::Value& field) {
+  //   rapidjson::Value field_key(key.c_str(), key.size(), allocator);
+  //   field.SetInt64((uint64_t) val);
+  //   root.AddMember(field_key, field, allocator);
+  // }
+
+  void add_json_member(std::string key, uint8_t val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root, rapidjson::Value& field);
+  void add_json_member(std::string key, uint32_t val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root, rapidjson::Value& field);
+  void add_json_member(std::string key, uint64_t val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root, rapidjson::Value& field);
   void add_json_member(std::string key, std::string val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root, rapidjson::Value& field);
   void add_json_member(std::string key, bool val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root);
 
@@ -124,6 +128,8 @@ namespace monero_utils
   rapidjson::Value to_rapidjson_val(rapidjson::Document::AllocatorType& allocator, const std::vector<uint8_t>& nums);
   rapidjson::Value to_rapidjson_val(rapidjson::Document::AllocatorType& allocator, const std::vector<uint32_t>& nums);
   rapidjson::Value to_rapidjson_val(rapidjson::Document::AllocatorType& allocator, const std::vector<uint64_t>& nums);
+  rapidjson::Value to_rapidjson_val(rapidjson::Document::AllocatorType& allocator, const std::map<std::string, uint64_t>& map);
+  rapidjson::Value to_rapidjson_val(rapidjson::Document::AllocatorType& allocator, const std::map<std::string, std::string>& map);
 
   // ------------------------ PROPERTY TREES ---------------------------
 

@@ -485,10 +485,10 @@ namespace monero {
     m_prunable_hash = gen_utils::reconcile(m_prunable_hash, other->m_prunable_hash, "tx m_prunable_hash");
     m_size = gen_utils::reconcile(m_size, other->m_size, "tx m_size");
     m_weight = gen_utils::reconcile(m_weight, other->m_weight, "tx m_weight");
-    //m_output_indices = gen_utils::reconcile(m_output_indices, other->m_output_indices, "tx m_output_indices");  // TODO
+    m_output_indices = gen_utils::reconcile(m_output_indices, other->m_output_indices, "tx m_output_indices");  // TODO
     m_metadata = gen_utils::reconcile(m_metadata, other->m_metadata, "tx m_metadata");
     m_common_tx_sets = gen_utils::reconcile(m_common_tx_sets, other->m_common_tx_sets, "tx m_common_tx_sets");
-    //m_extra = gen_utils::reconcile(m_extra, other->m_extra, "tx m_extra");  // TODO
+    m_extra = gen_utils::reconcile(m_extra, other->m_extra, "tx m_extra");  // TODO
     m_rct_signatures = gen_utils::reconcile(m_rct_signatures, other->m_rct_signatures, "tx m_rct_signatures");
     m_rct_sig_prunable = gen_utils::reconcile(m_rct_sig_prunable, other->m_rct_sig_prunable, "tx m_rct_sig_prunable");
     m_is_kept_by_block = gen_utils::reconcile(m_is_kept_by_block, other->m_is_kept_by_block, "tx m_is_kept_by_block");
@@ -497,7 +497,7 @@ namespace monero {
     m_last_failed_hash = gen_utils::reconcile(m_last_failed_hash, other->m_last_failed_hash, "tx m_last_failed_hash");
     m_max_used_block_height = gen_utils::reconcile(m_max_used_block_height, other->m_max_used_block_height, "tx m_max_used_block_height");
     m_max_used_block_hash = gen_utils::reconcile(m_max_used_block_hash, other->m_max_used_block_hash, "tx m_max_used_block_hash");
-    //m_signatures = gen_utils::reconcile(m_signatures, other->m_signatures, "tx m_signatures"); // TODO
+    m_signatures = gen_utils::reconcile(m_signatures, other->m_signatures, "tx m_signatures"); // TODO
     m_unlock_height = gen_utils::reconcile(m_unlock_height, other->m_unlock_height, "tx m_unlock_height");
     m_num_confirmations = gen_utils::reconcile(m_num_confirmations, other->m_num_confirmations, boost::none, boost::none, true, "tx m_num_confirmations"); // num confirmations can increase
 

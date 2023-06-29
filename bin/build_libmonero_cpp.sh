@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # build monero-project dependencies
-cd ./external/monero-project/ || exit 1
+cd ./external/zephyr/ || exit 1
 git submodule update --init --force || exit 1
 HOST_NCORES=$(nproc 2>/dev/null || shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 1)
 if [[ "$OSTYPE" == "msys" ]]; then
@@ -12,7 +12,7 @@ if [[ "$OSTYPE" == "msys" ]]; then
         make release-static-win32 -j$HOST_NCORES || exit 1
     fi
 elif [[ "$OSTYPE" == "cygwin" ]]; then
-    echo "monero-project supports building on Windows only with MSYS"
+    echo "zephyr supports building on Windows only with MSYS"
     exit 1
 else
     # OS is not windows

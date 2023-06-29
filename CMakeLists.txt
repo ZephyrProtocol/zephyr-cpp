@@ -25,7 +25,7 @@ set(BUILD_SCRATCHPAD ON)
 # monero-project
 ###################
 
-set(MONERO_PROJECT "${CMAKE_SOURCE_DIR}/external/monero-project" CACHE STRING "Monero project source directory")
+set(MONERO_PROJECT "${CMAKE_SOURCE_DIR}/external/zephyr" CACHE STRING "Monero project source directory")
 set(MONERO_PROJECT_SRC "${MONERO_PROJECT}/src")
 
 # header includes
@@ -150,7 +150,7 @@ include_directories(${HIDAPI_INCLUDE_DIR})
 #############
 
 set(MONERO_PROJECT_BUILD "${MONERO_PROJECT}/build/release" CACHE STRING "Monero project build directory")
-message(STATUS "Using monero-project build" : ${MONERO_PROJECT_BUILD})
+message(STATUS "Using zephyr build" : ${MONERO_PROJECT_BUILD})
 
 list(APPEND CMAKE_MODULE_PATH "${MONERO_PROJECT}/cmake")
 
@@ -297,6 +297,9 @@ if (BUILD_LIBRARY)
   add_library(monero-cpp SHARED ${LIBRARY_SRC_FILES})
   
   target_link_libraries(monero-cpp
+      ssl
+      crypto
+
       wallet
       rpc_base
       net
@@ -322,7 +325,7 @@ if (BUILD_LIBRARY)
       randomx
       epee
       hardforks
-      cncrypto
+
       ${wallet_crypto}
       
       ${UNBOUND_LIBRARIES}

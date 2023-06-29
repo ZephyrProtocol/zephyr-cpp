@@ -111,8 +111,8 @@ namespace monero {
     boost::optional<uint32_t> m_index;
     boost::optional<std::string> m_address;
     boost::optional<std::string> m_label;
-    boost::optional<uint64_t> m_balance;
-    boost::optional<uint64_t> m_unlocked_balance;
+    boost::optional<std::map<std::string, uint64_t>> m_balance;
+    boost::optional<std::map<std::string, uint64_t>> m_unlocked_balance;
     boost::optional<uint64_t> m_num_unspent_outputs;
     boost::optional<bool> m_is_used;
     boost::optional<uint64_t> m_num_blocks_to_unlock;
@@ -126,8 +126,8 @@ namespace monero {
   struct monero_account : public serializable_struct {
     boost::optional<uint32_t> m_index;
     boost::optional<std::string> m_primary_address;
-    boost::optional<uint64_t> m_balance;
-    boost::optional<uint64_t> m_unlocked_balance;
+    boost::optional<std::map<std::string, uint64_t>> m_balance;
+    boost::optional<std::map<std::string, uint64_t>> m_unlocked_balance;
     boost::optional<std::string> m_tag;
     std::vector<monero_subaddress> m_subaddresses;
 
@@ -140,8 +140,9 @@ namespace monero {
   struct monero_destination {
     boost::optional<std::string> m_address;
     boost::optional<uint64_t> m_amount;
+    std::string m_asset_type;
 
-    monero_destination(boost::optional<std::string> address = boost::none, boost::optional<uint64_t> amount = boost::none) : m_address(address), m_amount(amount) {}
+    monero_destination(boost::optional<std::string> address = boost::none, boost::optional<uint64_t> amount = boost::none, std::string asset_type = "ZEPH") : m_address(address), m_amount(amount), m_asset_type(asset_type) {}
     rapidjson::Value to_rapidjson_val(rapidjson::Document::AllocatorType& allocator) const;
     static void from_property_tree(const boost::property_tree::ptree& node, const std::shared_ptr<monero_destination>& destination);
     std::shared_ptr<monero_destination> copy(const std::shared_ptr<monero_destination>& src, const std::shared_ptr<monero_destination>& tgt) const;
@@ -161,6 +162,7 @@ namespace monero {
     std::shared_ptr<monero_tx_wallet> m_tx;
     boost::optional<uint64_t> m_amount;
     boost::optional<uint32_t> m_account_index;
+    std::string m_asset_type;
 
     rapidjson::Value to_rapidjson_val(rapidjson::Document::AllocatorType& allocator) const;
     static void from_property_tree(const boost::property_tree::ptree& node, const std::shared_ptr<monero_transfer>& transfer);
@@ -375,6 +377,8 @@ namespace monero {
     boost::optional<std::string> m_address;
     boost::optional<uint64_t> m_amount;
     std::vector<std::shared_ptr<monero_destination>> m_destinations;
+    boost::optional<std::string> source_currency;
+    boost::optional<std::string> destination_currency;
     boost::optional<std::string> m_payment_id;
     boost::optional<monero_tx_priority> m_priority;
     boost::optional<uint32_t> m_ring_size;

@@ -256,7 +256,6 @@ namespace monero {
   }
 
   std::vector<monero_subaddress> monero_wallet_keys::get_subaddresses(const uint32_t account_idx, const std::vector<uint32_t>& subaddress_indices) const {
-
     // must provide subaddress indices
     if (subaddress_indices.empty()) {
       std::string err = "Keys-only wallet does not have enumerable set of subaddresses; specific specific subaddresses";

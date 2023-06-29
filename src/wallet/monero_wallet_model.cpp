@@ -65,7 +65,7 @@ namespace monero {
 
   void merge_incoming_transfer(std::vector<std::shared_ptr<monero_incoming_transfer>>& transfers, const std::shared_ptr<monero_incoming_transfer>& transfer) {
     for (const std::shared_ptr<monero_incoming_transfer>& aTransfer : transfers) {
-      if (aTransfer->m_account_index.get() == transfer->m_account_index.get() && aTransfer->m_subaddress_index.get() == transfer->m_subaddress_index.get()) {
+      if (aTransfer->m_account_index.get() == transfer->m_account_index.get() && aTransfer->m_subaddress_index.get() == transfer->m_subaddress_index.get() && aTransfer->m_asset_type == transfer->m_asset_type ) {
         aTransfer->merge(aTransfer, transfer);
         return;
       }
@@ -229,8 +229,9 @@ namespace monero {
     // set num values
     rapidjson::Value value_num(rapidjson::kNumberType);
     if (m_index != boost::none) monero_utils::add_json_member("index", m_index.get(), allocator, root, value_num);
-    if (m_balance != boost::none) monero_utils::add_json_member("balance", m_balance.get(), allocator, root, value_num);
-    if (m_unlocked_balance != boost::none) monero_utils::add_json_member("unlockedBalance", m_unlocked_balance.get(), allocator, root, value_num);
+    
+    if (m_balance != boost::none) root.AddMember("balance", monero_utils::to_rapidjson_val(allocator, m_balance.get()), allocator);
+    if (m_unlocked_balance != boost::none) root.AddMember("unlockedBalance", monero_utils::to_rapidjson_val( allocator, m_unlocked_balance.get()), allocator);
 
     // set string values
     rapidjson::Value value_str(rapidjson::kStringType);
@@ -255,10 +256,12 @@ namespace monero {
     rapidjson::Value value_num(rapidjson::kNumberType);
     if (m_account_index != boost::none) monero_utils::add_json_member("accountIndex", m_account_index.get(), allocator, root, value_num);
     if (m_index != boost::none) monero_utils::add_json_member("index", m_index.get(), allocator, root, value_num);
-    if (m_balance != boost::none) monero_utils::add_json_member("balance", m_balance.get(), allocator, root, value_num);
-    if (m_unlocked_balance != boost::none) monero_utils::add_json_member("unlockedBalance", m_unlocked_balance.get(), allocator, root, value_num);
+
     if (m_num_unspent_outputs != boost::none) monero_utils::add_json_member("numUnspentOutputs", m_num_unspent_outputs.get(), allocator, root, value_num);
     if (m_num_blocks_to_unlock) monero_utils::add_json_member("numBlocksToUnlock", m_num_blocks_to_unlock.get(), allocator, root, value_num);
+
+    if (m_balance != boost::none) root.AddMember("balance", monero_utils::to_rapidjson_val(allocator, m_balance.get()), allocator);
+    if (m_unlocked_balance != boost::none) root.AddMember("unlockedBalance", monero_utils::to_rapidjson_val( allocator, m_unlocked_balance.get()), allocator);
 
     // set string values
     rapidjson::Value value_str(rapidjson::kStringType);
@@ -683,6 +686,7 @@ namespace monero {
     // set string values
     rapidjson::Value value_str(rapidjson::kStringType);
     if (m_address != boost::none) monero_utils::add_json_member("address", m_address.get(), allocator, root, value_str);
+    if (!m_asset_type.empty()) monero_utils::add_json_member("asset_type", m_asset_type, allocator, root, value_str);
 
     // return root
     return root;
@@ -693,6 +697,7 @@ namespace monero {
       std::string key = it->first;
       if (key == std::string("address")) destination->m_address = it->second.data();
       else if (key == std::string("amount")) destination->m_amount = it->second.get_value<uint64_t>();
+      else if (key == std::string("asset_type")) destination->m_asset_type = it->second.data();
     }
   }
 
@@ -700,6 +705,7 @@ namespace monero {
     if (this != src.get()) throw std::runtime_error("this destination!= src");
     tgt->m_address = src->m_address;
     tgt->m_amount = src->m_amount;
+    tgt->m_asset_type = src->m_asset_type;
     return tgt;
   };
 
@@ -762,6 +768,10 @@ namespace monero {
     if (m_amount != boost::none) monero_utils::add_json_member("amount", m_amount.get(), allocator, root, value_num);
     if (m_account_index != boost::none) monero_utils::add_json_member("accountIndex", m_account_index.get(), allocator, root, value_num);
 
+     // set std::string values
+    rapidjson::Value value_str(rapidjson::kStringType);
+    if (!m_asset_type.empty()) monero_utils::add_json_member("asset_type", m_asset_type, allocator, root, value_str);
+
     // return root
     return root;
   }
@@ -781,6 +791,7 @@ namespace monero {
     tgt->m_tx = src->m_tx;  // reference parent tx by default
     tgt->m_amount = src->m_amount;
     tgt->m_account_index = src->m_account_index;
+    tgt->m_asset_type = src->m_asset_type;
     return tgt;
   }
 
@@ -793,6 +804,10 @@ namespace monero {
       m_tx->merge(m_tx, other->m_tx);
       return;
     }
+
+    // m_asset_type = gen_utils::reconcile(m_asset_type, other->m_asset_type);
+    m_asset_type = m_asset_type.empty() ? other->m_asset_type : m_asset_type;
+
 
     // otherwise merge transfer fields
     m_account_index = gen_utils::reconcile(m_account_index, other->m_account_index, "transfer m_account_index");
@@ -1282,6 +1297,8 @@ namespace monero {
     }
     m_payment_id = config.m_payment_id;
     m_priority = config.m_priority;
+    source_currency = config.source_currency;
+    destination_currency = config.destination_currency;
     m_ring_size = config.m_ring_size;
     m_fee = config.m_fee;
     m_account_index = config.m_account_index;
@@ -1319,6 +1336,8 @@ namespace monero {
     if (m_note != boost::none) monero_utils::add_json_member("note", m_note.get(), allocator, root, value_str);
     if (m_recipient_name != boost::none) monero_utils::add_json_member("recipientName", m_recipient_name.get(), allocator, root, value_str);
     if (m_key_image != boost::none) monero_utils::add_json_member("keyImage", m_key_image.get(), allocator, root, value_str);
+    if (source_currency != boost::none) monero_utils::add_json_member("sourceCurrency", source_currency.get(), allocator, root, value_str);
+    if (destination_currency != boost::none) monero_utils::add_json_member("destinationCurrency", destination_currency.get(), allocator, root, value_str);
 
     // set bool values
     if (m_can_split != boost::none) monero_utils::add_json_member("canSplit", m_can_split.get(), allocator, root);
@@ -1352,6 +1371,8 @@ namespace monero {
           config->m_destinations.push_back(destination);
         }
       }
+      else if (key == std::string("sourceCurrency")) config->source_currency = it->second.data();
+      else if (key == std::string("destinationCurrency")) config->destination_currency = it->second.data();
       else if (key == std::string("paymentId")) config->m_payment_id = it->second.data();
       else if (key == std::string("priority")) {
         uint32_t priority_num = it->second.get_value<uint32_t>();

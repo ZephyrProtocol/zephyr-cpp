@@ -214,6 +214,22 @@ std::string monero_utils::serialize(const rapidjson::Document& doc) {
   return buffer.GetString();
 }
 
+void monero_utils::add_json_member(std::string key, uint8_t val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root, rapidjson::Value& field) {
+  rapidjson::Value field_key(key.c_str(), key.size(), allocator);
+  field.SetInt(val);
+  root.AddMember(field_key, field, allocator);
+}
+void monero_utils::add_json_member(std::string key, uint32_t val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root, rapidjson::Value& field) {
+  rapidjson::Value field_key(key.c_str(), key.size(), allocator);
+  field.SetUint64(val);
+  root.AddMember(field_key, field, allocator);
+}
+void monero_utils::add_json_member(std::string key, uint64_t val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root, rapidjson::Value& field) {
+  rapidjson::Value field_key(key.c_str(), key.size(), allocator);
+  field.SetUint64(val);
+  root.AddMember(field_key, field, allocator);
+}
+
 void monero_utils::add_json_member(std::string key, std::string val, rapidjson::Document::AllocatorType& allocator, rapidjson::Value& root, rapidjson::Value& field) {
   rapidjson::Value field_key(key.c_str(), key.size(), allocator);
   field.SetString(val.c_str(), val.size(), allocator);
@@ -270,6 +286,25 @@ rapidjson::Value monero_utils::to_rapidjson_val(rapidjson::Document::AllocatorTy
     value_arr.PushBack(value_num, allocator);
   }
   return value_arr;
+}
+
+rapidjson::Value monero_utils::to_rapidjson_val(rapidjson::Document::AllocatorType& allocator, const std::map<std::string, uint64_t>& map) {
+  rapidjson::Value value_obj(rapidjson::kObjectType);
+  rapidjson::Value value_num(rapidjson::kNumberType);
+  for (const auto& m : map) {
+    add_json_member(m.first, m.second, allocator, value_obj, value_num);
+  }
+  return value_obj;
+}
+
+rapidjson::Value monero_utils::to_rapidjson_val(rapidjson::Document::AllocatorType& allocator, const std::map<std::string, std::string>& map) {
+
+  rapidjson::Value value_obj(rapidjson::kObjectType);
+  rapidjson::Value value_str(rapidjson::kStringType);
+  for (const auto& m : map) {
+    add_json_member(m.first, m.second, allocator, value_obj, value_str);
+  }
+  return value_obj;
 }
 
 // ------------------------ PROPERTY TREES ---------------------------
@@ -332,11 +367,13 @@ std::shared_ptr<monero_tx> monero_utils::cn_tx_to_tx(const cryptonote::transacti
   for (const txin_v& cnVin : cn_tx.vin) {
     if (cnVin.which() != 0 && cnVin.which() != 3) throw std::runtime_error("Unsupported variant type");
     if (tx->m_is_miner_tx == boost::none) tx->m_is_miner_tx = cnVin.which() == 0;
-    if (cnVin.which() != 3) continue; // only process txin_to_key of variant  TODO: support other types, like 0 "gen" which is miner tx?
+
+    if (cnVin.which() != 3) continue; // only process txin_zephyr_key of variant  TODO: support other types, like 0 "gen" which is miner tx?
     std::shared_ptr<monero_output> input = init_as_tx_wallet ? std::make_shared<monero_output_wallet>() : std::make_shared<monero_output>();
     input->m_tx = tx;
     tx->m_inputs.push_back(input);
-    const txin_to_key& txin = boost::get<txin_to_key>(cnVin);
+    const txin_zephyr_key& txin = boost::get<txin_zephyr_key>(cnVin);
+    input->m_asset_type = txin.asset_type;
     input->m_amount = txin.amount;
     input->m_ring_output_indices = txin.key_offsets;
     crypto::key_image cnKeyImage = txin.k_image;
@@ -351,16 +388,14 @@ std::shared_ptr<monero_tx> monero_utils::cn_tx_to_tx(const cryptonote::transacti
     tx->m_outputs.push_back(output);
     output->m_amount = cnVout.amount;
 
-    // before HF_VERSION_VIEW_TAGS, outputs with public keys are of type txout_to_key
-    // after HF_VERSION_VIEW_TAGS, outputs with public keys are of type txout_to_tagged_key
     crypto::public_key cnStealthPublicKey;
-    if (cnVout.target.type() == typeid(txout_to_key))
-      cnStealthPublicKey = boost::get<txout_to_key>(cnVout.target).key;
-    else if (cnVout.target.type() == typeid(txout_to_tagged_key))
-      cnStealthPublicKey = boost::get<txout_to_tagged_key>(cnVout.target).key;
+    if (cnVout.target.type() == typeid(txout_zephyr_tagged_key))
+      cnStealthPublicKey = boost::get<txout_zephyr_tagged_key>(cnVout.target).key;
     else
       throw std::runtime_error(std::string("Unexpected output target type found: ") + std::string(cnVout.target.type().name()));
     output->m_stealth_public_key = epee::string_tools::pod_to_hex(cnStealthPublicKey);
+
+    output->m_asset_type = boost::get<txout_zephyr_tagged_key>(cnVout.target).asset_type;
   }
 
   return tx;
