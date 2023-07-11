@@ -2287,20 +2287,20 @@ namespace monero {
       } else {
         std::vector<uint32_t> subaddress_indices;
         for (const monero_subaddress& subaddress : monero_wallet::get_subaddresses(config.m_account_index.get())) {
-          auto iter = subaddress.m_unlocked_balance.find(source_currency);
-          if (iter != subaddress.m_unlocked_balance.end() && iter->second > 0) subaddress_indices.push_back(subaddress.m_index.get());
+          auto iter = subaddress.m_unlocked_balance->find(source_currency);
+          if (iter != subaddress.m_unlocked_balance->end() && iter->second > 0) subaddress_indices.push_back(subaddress.m_index.get());
         }
         indices[config.m_account_index.get()] = subaddress_indices;
       }
     } else {
       std::vector<monero_account> accounts = monero_wallet::get_accounts(true);
       for (const monero_account& account : accounts) {
-        auto iter = account.m_unlocked_balance.find(source_currency);
-        if (iter != account.m_unlocked_balance.end() && iter->second > 0) {
+        auto iter = account.m_unlocked_balance->find(source_currency);
+        if (iter != account.m_unlocked_balance->end() && iter->second > 0) {
           std::vector<uint32_t> subaddress_indices;
           for (const monero_subaddress& subaddress : account.m_subaddresses) {
-            auto iter2 = subaddress.m_unlocked_balance.find(source_currency);
-            if (iter != subaddress.m_unlocked_balance.end() && iter->second > 0) subaddress_indices.push_back(subaddress.m_index.get());
+            auto iter2 = subaddress.m_unlocked_balance->find(source_currency);
+            if (iter != subaddress.m_unlocked_balance->end() && iter->second > 0) subaddress_indices.push_back(subaddress.m_index.get());
           }
           indices[account.m_index.get()] = subaddress_indices;
         }
@@ -2375,8 +2375,9 @@ namespace monero {
     std::set<uint32_t> subaddress_indices;
     for (const uint32_t& subaddress_idx : config.m_subaddress_indices) subaddress_indices.insert(subaddress_idx);
 
+    std::string asset_type = config.source_currency == boost::none ? "ZEPH" : config.source_currency.get();
     // prepare transactions
-    std::vector<wallet2::pending_tx> ptx_vector = m_w2->create_transactions_all(below_amount, dsts[0].addr, dsts[0].is_subaddress, num_outputs, mixin, unlock_height, priority, extra, account_index, subaddress_indices);
+    std::vector<wallet2::pending_tx> ptx_vector = m_w2->create_transactions_all(below_amount, asset_type, dsts[0].addr, dsts[0].is_subaddress, num_outputs, mixin, unlock_height, priority, extra, account_index, subaddress_indices);
 
     // config for fill_response()
     bool get_tx_keys = true;
