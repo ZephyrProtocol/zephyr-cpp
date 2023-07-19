@@ -1670,13 +1670,24 @@ namespace monero {
     return supply_amounts;
   }
 
-  void monero_wallet_full::get_reserve_info(uint64_t& zeph_reserve, uint64_t& num_stables, uint64_t& num_reserves, uint64_t& assets, uint64_t& assets_ma, uint64_t& liabilities, uint64_t& equity, uint64_t& equity_ma, double& reserve_ratio, double& reserve_ratio_ma) const {
+  void monero_wallet_full::get_reserve_info(
+    boost::multiprecision::uint128_t& zeph_reserve,
+    boost::multiprecision::uint128_t& num_stables,
+    boost::multiprecision::uint128_t& num_reserves,
+    boost::multiprecision::uint128_t& assets,
+    boost::multiprecision::uint128_t& assets_ma,
+    boost::multiprecision::uint128_t& liabilities,
+    boost::multiprecision::uint128_t& equity,
+    boost::multiprecision::uint128_t& equity_ma,
+    double& reserve_ratio,
+    double& reserve_ratio_ma
+  ) const {
     // get pricing record
     std::string err;
     uint64_t bc_height = m_w2->get_daemon_blockchain_height(err);
     oracle::pricing_record pr;
     if (!m_w2->get_pricing_record(pr, bc_height-1)) {
-       throw std::runtime_error("failed to get pricing record. Make sure you are connected to a daemon.");
+      return;
     }
 
     // get reserve info
