@@ -660,6 +660,7 @@ namespace monero {
     tgt->m_tx = src->m_tx;  // reference same parent tx by default
     if (src->m_key_image != boost::none) tgt->m_key_image = src->m_key_image.get()->copy(src->m_key_image.get(), std::make_shared<monero_key_image>());
     tgt->m_amount = src->m_amount;
+    tgt->m_asset_type = src->m_asset_type;
     tgt->m_index = src->m_index;
     if (!src->m_ring_output_indices.empty()) tgt->m_ring_output_indices = std::vector<uint64_t>(src->m_ring_output_indices);
     tgt->m_stealth_public_key = src->m_stealth_public_key;

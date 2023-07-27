@@ -244,6 +244,7 @@ namespace monero {
     for (const auto &d: pd.m_dests) {
       std::shared_ptr<monero_destination> destination = std::make_shared<monero_destination>();
       destination->m_amount = d.dest_amount;
+      destination->m_asset_type = d.dest_asset_type;
       destination->m_address = d.address(m_w2.nettype(), pd.m_payment_id);
       outgoing_transfer->m_destinations.push_back(destination);
     }
@@ -342,6 +343,7 @@ namespace monero {
     for (const auto &d: pd.m_dests) {
       std::shared_ptr<monero_destination> destination = std::make_shared<monero_destination>();
       destination->m_amount = d.dest_amount;
+      destination->m_asset_type = d.dest_asset_type;
       destination->m_address = d.address(m_w2.nettype(), pd.m_payment_id);
       outgoing_transfer->m_destinations.push_back(destination);
     }
