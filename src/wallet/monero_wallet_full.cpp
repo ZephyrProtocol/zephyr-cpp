@@ -872,7 +872,7 @@ namespace monero {
           m_prev_locked_tx_hashes.insert(tx->m_hash.get());
 
           // notify if balances changed
-          check_for_changed_balances(asset_type);
+          check_for_changed_balances();
 
           // free memory
           monero_utils::free(block);
@@ -919,7 +919,7 @@ namespace monero {
           m_prev_locked_tx_hashes.insert(tx->m_hash.get());
 
           // notify if balances changed
-          check_for_changed_balances(asset_type);
+          check_for_changed_balances();
 
           // free memory
           monero_utils::free(block);
@@ -2098,9 +2098,7 @@ namespace monero {
 
     using tt = cryptonote::transaction_type;
     tt tx_type;
-
     bool isValidTxType = cryptonote::get_tx_type(source_currency, destination_currency, tx_type);
-
     if (!isValidTxType) {
         throw std::runtime_error("not a valid tx type");
     }
@@ -2163,7 +2161,7 @@ namespace monero {
     std::list<std::string> tx_keys;
     std::list<uint64_t> tx_amounts;
     std::list<uint64_t> tx_dest_amounts;
-    std::list<uint64_t> tx_amounts_change;
+    std::list<uint64_t> tx_change_amounts;
     std::list<uint64_t> tx_fees;
     std::list<uint64_t> tx_weights;
     std::string multisig_tx_hex;
@@ -2172,7 +2170,7 @@ namespace monero {
     std::list<std::string> tx_blobs;
     std::list<std::string> tx_metadatas;
     std::list<key_image_list> input_key_images_list;
-    if (!fill_response(m_w2.get(), ptx_vector, get_tx_keys, tx_keys, tx_amounts, tx_dest_amounts, tx_amounts_change, tx_fees, tx_weights, multisig_tx_hex, unsigned_tx_hex, !relay, tx_hashes, get_tx_hex, tx_blobs, get_tx_metadata, tx_metadatas, input_key_images_list, err)) {
+    if (!fill_response(m_w2.get(), ptx_vector, get_tx_keys, tx_keys, tx_amounts, tx_dest_amounts, tx_change_amounts, tx_fees, tx_weights, multisig_tx_hex, unsigned_tx_hex, !relay, tx_hashes, get_tx_hex, tx_blobs, get_tx_metadata, tx_metadatas, input_key_images_list, err)) {
       throw std::runtime_error("need to handle error filling response!");  // TODO
     }
 
@@ -2182,7 +2180,7 @@ namespace monero {
     auto tx_keys_iter = tx_keys.begin();
     auto tx_amounts_iter = tx_amounts.begin();
     auto tx_dest_amounts_iter = tx_dest_amounts.begin();
-    auto tx_amounts_change_iter = tx_amounts_change.begin();
+    auto tx_change_amounts_iter = tx_change_amounts.begin();
     auto tx_fees_iter = tx_fees.begin();
     auto tx_weights_iter = tx_weights.begin();
     auto tx_blobs_iter = tx_blobs.begin();
@@ -2196,7 +2194,7 @@ namespace monero {
       tx->m_hash = *tx_hashes_iter;
       tx->m_key = *tx_keys_iter;
       tx->m_fee = *tx_fees_iter;
-      tx->m_change_amount = *tx_amounts_change_iter;
+      tx->m_change_amount = *tx_change_amounts_iter;
       tx->m_weight = *tx_weights_iter;
       tx->m_full_hex = *tx_blobs_iter;
       tx->m_metadata = *tx_metadatas_iter;
@@ -2206,14 +2204,14 @@ namespace monero {
       out_transfer->m_asset_type = source_currency;
 
       // init inputs with key images
-      // std::list<std::string> input_key_images = (*input_key_images_list_iter).key_images;
-      // for (const std::string& input_key_image : input_key_images) {
-      //   std::shared_ptr<monero_output_wallet> input = std::make_shared<monero_output_wallet>();
-      //   input->m_tx = tx;
-      //   tx->m_inputs.push_back(input);
-      //   input->m_key_image = std::make_shared<monero_key_image>();
-      //   input->m_key_image.get()->m_hex = input_key_image;
-      // }
+      std::list<std::string> input_key_images = (*input_key_images_list_iter).key_images;
+      for (const std::string& input_key_image : input_key_images) {
+        std::shared_ptr<monero_output_wallet> input = std::make_shared<monero_output_wallet>();
+        input->m_tx = tx;
+        tx->m_inputs.push_back(input);
+        input->m_key_image = std::make_shared<monero_key_image>();
+        input->m_key_image.get()->m_hex = input_key_image;
+      }
 
       if (tx_type != tt::TRANSFER && tx_type != tt::STABLE_TRANSFER && tx_type != tt::RESERVE_TRANSFER) {
         std::shared_ptr<monero_incoming_transfer> incoming_transfer = std::make_shared<monero_incoming_transfer>();
@@ -2245,7 +2243,7 @@ namespace monero {
       tx_keys_iter++;
       tx_amounts_iter++;
       tx_dest_amounts_iter++;
-      tx_amounts_change_iter++;
+      tx_change_amounts_iter++;
       tx_fees_iter++;
       tx_hashes_iter++;
       tx_blobs_iter++;
@@ -2283,11 +2281,9 @@ namespace monero {
     if (config.destination_currency == boost::none) throw std::runtime_error("Must specify destination currency");
     std::string destination_currency = config.destination_currency.get();
 
-    using t_type = cryptonote::transaction_type;
-    t_type tx_type;
-
+    using tt = cryptonote::transaction_type;
+    tt tx_type;
     bool isValidTxType = cryptonote::get_tx_type(source_currency, destination_currency, tx_type);
-
     if (!isValidTxType) {
         throw std::runtime_error("not a valid tx type");
     }
@@ -2363,6 +2359,19 @@ namespace monero {
     if (config.m_key_image != boost::none) throw std::runtime_error("Cannot define key image in sweep_account(); use sweep_output() to sweep an output by its key image");
     if (config.m_sweep_each_subaddress != boost::none && config.m_sweep_each_subaddress.get() == true) throw std::runtime_error("Cannot sweep each subaddress individually with sweep_account");
 
+    if (config.source_currency == boost::none) throw std::runtime_error("Must specify source currency");
+    std::string source_currency = config.source_currency.get();
+
+    if (config.destination_currency == boost::none) throw std::runtime_error("Must specify destination currency");
+    std::string destination_currency = config.destination_currency.get();
+
+    using tt = cryptonote::transaction_type;
+    tt tx_type;
+    bool isValidTxType = cryptonote::get_tx_type(source_currency, destination_currency, tx_type);
+    if (!isValidTxType) {
+        throw std::runtime_error("not a valid tx type");
+    }
+
     // validate the transfer requested and populate dsts & extra
     std::list<wallet_rpc::transfer_destination> destination;
     destination.push_back(wallet_rpc::transfer_destination());
@@ -2372,7 +2381,7 @@ namespace monero {
     std::vector<cryptonote::tx_destination_entry> dsts;
     std::vector<uint8_t> extra;
     epee::json_rpc::error err;
-    if (!validate_transfer(m_w2.get(), "ZEPH", destination, payment_id, dsts, extra, true, err)) {
+    if (!validate_transfer(m_w2.get(), destination_currency, destination, payment_id, dsts, extra, true, err)) {
       throw std::runtime_error("Failed to validate sweep_account transfer request");
     }
 
@@ -2388,9 +2397,8 @@ namespace monero {
     std::set<uint32_t> subaddress_indices;
     for (const uint32_t& subaddress_idx : config.m_subaddress_indices) subaddress_indices.insert(subaddress_idx);
 
-    std::string asset_type = config.source_currency == boost::none ? "ZEPH" : config.source_currency.get();
     // prepare transactions
-    std::vector<wallet2::pending_tx> ptx_vector = m_w2->create_transactions_all(below_amount, asset_type, dsts[0].addr, dsts[0].is_subaddress, num_outputs, mixin, unlock_height, priority, extra, account_index, subaddress_indices);
+    std::vector<wallet2::pending_tx> ptx_vector = m_w2->create_transactions_all(below_amount, source_currency, destination_currency, dsts[0].addr, dsts[0].is_subaddress, num_outputs, mixin, unlock_height, priority, extra, account_index, subaddress_indices);
 
     // config for fill_response()
     bool get_tx_keys = true;
@@ -2402,7 +2410,7 @@ namespace monero {
     std::list<std::string> tx_keys;
     std::list<uint64_t> tx_amounts;
     std::list<uint64_t> tx_dest_amounts;
-    std::list<uint64_t> tx_amounts_change;
+    std::list<uint64_t> tx_change_amounts;
     std::list<uint64_t> tx_fees;
     std::list<uint64_t> tx_weights;
     std::string multisig_tx_hex;
@@ -2411,7 +2419,7 @@ namespace monero {
     std::list<std::string> tx_blobs;
     std::list<std::string> tx_metadatas;
     std::list<key_image_list> input_key_images_list;
-    if (!fill_response(m_w2.get(), ptx_vector, get_tx_keys, tx_keys, tx_amounts, tx_dest_amounts, tx_amounts_change, tx_fees, tx_weights, multisig_tx_hex, unsigned_tx_hex, !relay, tx_hashes, get_tx_hex, tx_blobs, get_tx_metadata, tx_metadatas, input_key_images_list, err)) {
+    if (!fill_response(m_w2.get(), ptx_vector, get_tx_keys, tx_keys, tx_amounts, tx_dest_amounts, tx_change_amounts, tx_fees, tx_weights, multisig_tx_hex, unsigned_tx_hex, !relay, tx_hashes, get_tx_hex, tx_blobs, get_tx_metadata, tx_metadatas, input_key_images_list, err)) {
       throw std::runtime_error("need to handle error filling response!");  // TODO
     }
 
@@ -2421,6 +2429,7 @@ namespace monero {
     auto tx_keys_iter = tx_keys.begin();
     auto tx_amounts_iter = tx_amounts.begin();
     auto tx_dest_amounts_iter = tx_dest_amounts.begin();
+    auto tx_change_amounts_iter = tx_change_amounts.begin();
     auto tx_fees_iter = tx_fees.begin();
     auto tx_weights_iter = tx_weights.begin();
     auto tx_blobs_iter = tx_blobs.begin();
@@ -2435,6 +2444,7 @@ namespace monero {
       tx->m_is_locked = true;
       tx->m_is_outgoing = true;
       tx->m_key = *tx_keys_iter;
+      tx->m_change_amount = *tx_change_amounts_iter;
       tx->m_fee = *tx_fees_iter;
       tx->m_weight = *tx_weights_iter;
       tx->m_full_hex = *tx_blobs_iter;
@@ -2442,6 +2452,7 @@ namespace monero {
       std::shared_ptr<monero_outgoing_transfer> out_transfer = std::make_shared<monero_outgoing_transfer>();
       tx->m_outgoing_transfer = out_transfer;
       out_transfer->m_amount = *tx_amounts_iter;
+      out_transfer->m_asset_type = source_currency;
       std::shared_ptr<monero_destination> destination = std::make_shared<monero_destination>(destinations[0]->m_address.get(), out_transfer->m_amount.get());
       out_transfer->m_destinations.push_back(destination);
 
@@ -2453,6 +2464,14 @@ namespace monero {
         tx->m_inputs.push_back(input);
         input->m_key_image = std::make_shared<monero_key_image>();
         input->m_key_image.get()->m_hex = input_key_image;
+      }
+
+      if (tx_type != tt::TRANSFER && tx_type != tt::STABLE_TRANSFER && tx_type != tt::RESERVE_TRANSFER) {
+        std::shared_ptr<monero_incoming_transfer> incoming_transfer = std::make_shared<monero_incoming_transfer>();
+        incoming_transfer->m_tx = tx;
+        tx->m_incoming_transfers.push_back(incoming_transfer);
+        incoming_transfer->m_amount = *tx_dest_amounts_iter;
+        incoming_transfer->m_asset_type = destination_currency;
       }
 
       // init other known fields
@@ -2474,6 +2493,8 @@ namespace monero {
       // iterate to next element
       tx_keys_iter++;
       tx_amounts_iter++;
+      tx_dest_amounts_iter++;
+      tx_change_amounts_iter++;
       tx_fees_iter++;
       tx_hashes_iter++;
       tx_blobs_iter++;
