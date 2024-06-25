@@ -233,7 +233,8 @@ namespace monero {
       boost::multiprecision::uint128_t& equity,
       boost::multiprecision::uint128_t& equity_ma,
       double& reserve_ratio,
-      double& reserve_ratio_ma
+      double& reserve_ratio_ma,
+      uint8_t& hf_version
     ) const override;
 
 
@@ -317,7 +318,7 @@ namespace monero {
      * Wallet import and export using buffers and not the file system.
      */
     std::string get_keys_file_buffer(const epee::wipeable_string& password, bool view_only) const;
-    std::string get_cache_file_buffer(const epee::wipeable_string& password) const;
+    std::string get_cache_file_buffer() const;
 
   // ---------------------------------- PRIVATE ---------------------------------
 

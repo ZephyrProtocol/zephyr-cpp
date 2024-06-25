@@ -1636,13 +1636,13 @@ namespace monero {
     if (!m_is_connected) throw std::runtime_error("Wallet is not connected to daemon");
 
     // convert string ids to crypto hashes
-    std::vector<crypto::hash> tx_hashes;
+    std::unordered_set<crypto::hash> tx_hashes;
     std::vector<std::string>::const_iterator i = tx_ids.begin();
     while (i != tx_ids.end()) {
       cryptonote::blobdata tx_hash_blob;
       if (!epee::string_tools::parse_hexstr_to_binbuff(*i++, tx_hash_blob) || tx_hash_blob.size() != sizeof(crypto::hash)) throw std::runtime_error("TX ID has invalid format");
       crypto::hash tx_hash = *reinterpret_cast<const crypto::hash*>(tx_hash_blob.data());
-      tx_hashes.push_back(tx_hash);
+      tx_hashes.insert(tx_hash);
     }
 
     // scan txs
@@ -1682,18 +1682,20 @@ namespace monero {
     boost::multiprecision::uint128_t& equity,
     boost::multiprecision::uint128_t& equity_ma,
     double& reserve_ratio,
-    double& reserve_ratio_ma
+    double& reserve_ratio_ma,
+    uint8_t& hf_version
   ) const {
     // get pricing record
     std::string err;
     uint64_t bc_height = m_w2->get_daemon_blockchain_height(err);
+    hf_version = m_w2->get_current_hard_fork();
     oracle::pricing_record pr;
-    if (!m_w2->get_pricing_record(pr, bc_height-1)) {
+    if (!m_w2->get_pricing_record(pr, bc_height-1, false)) {
       return;
     }
 
     // get reserve info
-    m_w2->get_reserve_info(pr, zeph_reserve, num_stables, num_reserves, assets, assets_ma, liabilities, equity, equity_ma, reserve_ratio, reserve_ratio_ma);
+    m_w2->get_reserve_info(pr, hf_version, zeph_reserve, num_stables, num_reserves, assets, assets_ma, liabilities, equity, equity_ma, reserve_ratio, reserve_ratio_ma);
   }
 
   // isMultisigImportNeeded
@@ -3684,8 +3686,8 @@ namespace monero {
     return buf;
   }
 
-  std::string monero_wallet_full::get_cache_file_buffer(const epee::wipeable_string& password) const {
-    boost::optional<wallet2::cache_file_data> cache_file_data = m_w2->get_cache_file_data(password);
+  std::string monero_wallet_full::get_cache_file_buffer() const {
+    boost::optional<wallet2::cache_file_data> cache_file_data = m_w2->get_cache_file_data();
     std::string buf;
     ::serialization::dump_binary(cache_file_data.get(), buf);
     return buf;

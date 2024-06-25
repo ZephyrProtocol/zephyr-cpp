@@ -540,7 +540,8 @@ namespace monero {
       boost::multiprecision::uint128_t& equity,
       boost::multiprecision::uint128_t& equity_ma,
       double& reserve_ratio,
-      double& reserve_ratio_ma
+      double& reserve_ratio_ma,
+      uint8_t& hf_version
     ) const {
       throw std::runtime_error("get_reserve_info() not supported");
     }
