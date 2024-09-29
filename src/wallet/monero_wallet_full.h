@@ -234,7 +234,9 @@ namespace monero {
       boost::multiprecision::uint128_t& equity_ma,
       double& reserve_ratio,
       double& reserve_ratio_ma,
-      uint8_t& hf_version
+      uint8_t& hf_version,
+      boost::multiprecision::uint128_t& zyield_circ,
+      boost::multiprecision::uint128_t& zyield_rsv
     ) const override;
 
 

@@ -1683,7 +1683,9 @@ namespace monero {
     boost::multiprecision::uint128_t& equity_ma,
     double& reserve_ratio,
     double& reserve_ratio_ma,
-    uint8_t& hf_version
+    uint8_t& hf_version,
+    boost::multiprecision::uint128_t& zyield_circ,
+    boost::multiprecision::uint128_t& zyield_rsv
   ) const {
     // get pricing record
     std::string err;
@@ -1695,7 +1697,7 @@ namespace monero {
     }
 
     // get reserve info
-    m_w2->get_reserve_info(pr, hf_version, zeph_reserve, num_stables, num_reserves, assets, assets_ma, liabilities, equity, equity_ma, reserve_ratio, reserve_ratio_ma);
+    m_w2->get_reserve_info(pr, hf_version, zeph_reserve, num_stables, num_reserves, assets, assets_ma, liabilities, equity, equity_ma, reserve_ratio, reserve_ratio_ma, zyield_circ, zyield_rsv);
   }
 
   // isMultisigImportNeeded
