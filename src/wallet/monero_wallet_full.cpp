@@ -980,7 +980,9 @@ namespace monero {
           balance_changed = true;
         }
       } else {
-        for (const auto &asset_type_in_list : oracle::ASSET_TYPES) {
+        std::vector<std::string> all_asset_types = oracle::ASSET_TYPES;
+        all_asset_types.insert(all_asset_types.end(), oracle::ASSET_TYPES_V2.begin(), oracle::ASSET_TYPES_V2.end());
+        for (const auto &asset_type_in_list : all_asset_types) {
           auto iter1 = m_prev_balance.find(asset_type_in_list);
           auto iter2 = m_current_balance.find(asset_type_in_list);
 
